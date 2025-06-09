@@ -1,0 +1,1960 @@
+---
+title: "Beacom Sioux Falls Thrive"
+author: "Blen"
+date: "2025-06-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(readxl)
+library(ggplot2)
+library(tidyr)
+library(dplyr) 
+library(scales)
+```
+
+```{r imported data}
+setwd("/Users/blenl/Desktop")
+file_2017<- read_xlsx("2017-18.xlsx")
+file_2018<- read_xlsx("2018-19.xlsx")
+file_2020<- read_xlsx("2020-21.xlsx")
+file_2021<- read_xlsx("2021-22.xlsx")
+file_2022<- read_xlsx("2022-23.xlsx")
+file_2023<- read_xlsx("2023-24.xlsx")
+```
+
+```{r data manipulation- 2017}
+#Dividing between title I and Non Title I schools:
+titleI_2017 <- file_2017[file_2017[, 8] == "Yes", ]
+nonTitleI_2017 <- file_2017[file_2017[, 8] == "No", ]
+
+#extracting attendance information:
+Attendance_titleI_2017<- mean(titleI_2017$Attendance)
+Attendance_non_titleI_2017<- mean(nonTitleI_2017$Attendance)
+Attendance_2017<- data.frame (Attendance_titleI_2017, Attendance_non_titleI_2017, year=("2017"))
+Attendance_2017_long <- Attendance_2017 %>%
+  pivot_longer(
+    cols = starts_with("Attendance_"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+#extracting absenteeism information:
+Absenteeism_titleI_2017<- mean (titleI_2017$Absenteeism)
+Absenteeism_non_titleI_2017<- mean (nonTitleI_2017$Absenteeism)
+Absenteeism_2017<- data.frame (Absenteeism_titleI_2017, Absenteeism_non_titleI_2017, year=("2017"))
+Absenteeism_2017_long <- Absenteeism_2017 %>%
+  pivot_longer(
+    cols = starts_with("Absenteeism_"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+#extracting proficiency scores
+ELA_titleI_2017<- mean (titleI_2017$ELA)
+ELA_non_titleI_2017<- mean (nonTitleI_2017$ELA)
+ELA_2017<- data.frame (ELA_titleI_2017, ELA_non_titleI_2017, year=("2017"))
+ELA_2017_long <- ELA_2017 %>%
+  pivot_longer(
+    cols = starts_with("ELA_"),
+    names_to = "Group",
+    values_to = "ELA"
+  )
+
+Math_titleI_2017<- mean (titleI_2017$Math)
+Math_non_titleI_2017<- mean (nonTitleI_2017$Math)
+Math_2017<- data.frame (Math_titleI_2017, Math_non_titleI_2017, year=("2017"))
+Math_2017_long <- Math_2017 %>%
+  pivot_longer(
+    cols = starts_with("Math_"),
+    names_to = "Group",
+    values_to = "Math"
+  )
+
+
+Science_titleI_2017<- mean (titleI_2017$Science)
+Science_non_titleI_2017<- mean (nonTitleI_2017$Science)
+Science_2017<- data.frame (Science_titleI_2017, Science_non_titleI_2017, year=("2017"))
+Science_2017_long <- Science_2017 %>%
+  pivot_longer(
+    cols = starts_with("Science_"),
+    names_to = "Group",
+    values_to = "Science"
+  )
+
+proficiency_2017_titleI<- data.frame(ELA=ELA_titleI_2017, Math=Math_titleI_2017, Science=Science_titleI_2017)
+proficiency_2017_titleI_long<- proficiency_2017_titleI %>%
+  pivot_longer(
+    cols=everything(),
+    names_to= c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency")
+  
+
+#combining information from ELA, Math, and Science proficiencies
+proficiency_2017_total<- data.frame(ELAI=ELA_titleI_2017, MathI=Math_titleI_2017, ScienceI=Science_titleI_2017, 
+                                     ELAN=ELA_non_titleI_2017, MathN=Math_non_titleI_2017, ScienceN=Science_non_titleI_2017)
+Proficiency_2017_long_total <- proficiency_2017_total %>%
+  pivot_longer(
+    cols = everything(),                # pivot all columns
+    names_to = c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency"
+  )
+```
+
+Plotting each year
+```{r graphs-2017}
+#plot the average attendance rate:
+ggplot(Attendance_2017_long, aes(x = Group, y = Attendance, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Attendance by Title I Status in Sioux Falls (2017-18)", x="School Type", y="Average Attendance Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Attendance_titleI_2017" = "Title I Schools",
+    "Attendance_non_titleI_2017" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Attendance_titleI_2017" = "#226e9c", "Attendance_non_titleI_2017" = "#cf597e"), 
+    labels = c("Attendance_titleI_2017" = "Title I Schools", "Attendance_non_titleI_2017" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average absenteeism rate:
+ggplot(Absenteeism_2017_long, aes(x = Group, y = Absenteeism, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Absenteeism Rate by Title I Status in Sioux Falls (2017-18)", x="School Type", y="Average Absenteeism Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Absenteeism_titleI_2017" = "Title I Schools",
+    "Absenteeism_non_titleI_2017" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Absenteeism_titleI_2017" = "#226e9c", "Absenteeism_non_titleI_2017" = "#cf597e"), 
+    labels = c("Absenteeism_titleI_2017" = "Title I Schools", "Absenteeism_non_titleI_2017" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average proficiency scores 
+ggplot(Proficiency_2017_long_total, aes(x = Subject, y = Proficiency, fill = Group)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Proficiency by Subject and Title I Status (2017-18)",
+    x = "Subject",
+    y = "Proficiency Rate",
+    fill = "School Type"
+  ) +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "I" = "Title I Schools",
+    "N" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("I" = "#226e9c", "N" = "#cf597e"), 
+    labels = c("I" = "Title I Schools", "N" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+
+```
+
+```{r data manipulation- 2018}
+#Dividing between title I and Non Title I schools:
+titleI_2018 <- file_2018[file_2018[, 8] == "Yes", ]
+nonTitleI_2018 <- file_2018[file_2018[, 8] == "No", ]
+
+#extracting attendance information:
+Attendance_titleI_2018<- mean(titleI_2018$Attendance)
+Attendance_non_titleI_2018<- mean(nonTitleI_2018$Attendance)
+Attendance_2018<- data.frame (Attendance_titleI_2018, Attendance_non_titleI_2018, year=("2018"))
+Attendance_2018_long <- Attendance_2018 %>%
+  pivot_longer(
+    cols = starts_with("Attendance_"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+#extracting absenteeism informaiton:
+Absenteeism_titleI_2018<- mean (titleI_2018$Absenteeism)
+Absenteeism_non_titleI_2018<- mean (nonTitleI_2018$Absenteeism)
+Absenteeism_2018<- data.frame (Absenteeism_titleI_2018, Absenteeism_non_titleI_2018, year=("2018"))
+Absenteeism_2018_long <- Absenteeism_2018 %>%
+  pivot_longer(
+    cols = starts_with("Absenteeism_"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+#extracting proficiency scores
+ELA_titleI_2018<- mean (titleI_2018$ELA)
+ELA_non_titleI_2018<- mean (nonTitleI_2018$ELA)
+ELA_2018<- data.frame (ELA_titleI_2018, ELA_non_titleI_2018, year=("2018"))
+ELA_2018_long <- ELA_2018 %>%
+  pivot_longer(
+    cols = starts_with("ELA_"),
+    names_to = "Group",
+    values_to = "ELA"
+  )
+
+Math_titleI_2018<- mean (titleI_2018$Math)
+Math_non_titleI_2018<- mean (nonTitleI_2018$Math)
+Math_2018<- data.frame (Math_titleI_2018, Math_non_titleI_2018, year=("2018"))
+Math_2018_long <- Math_2018 %>%
+  pivot_longer(
+    cols = starts_with("Math_"),
+    names_to = "Group",
+    values_to = "Math"
+  )
+
+
+Science_titleI_2018<- mean (titleI_2018$Science)
+Science_non_titleI_2018<- mean (nonTitleI_2018$Science)
+Science_2018<- data.frame (Science_titleI_2018, Science_non_titleI_2018, year=("2018"))
+Science_2018_long <- Science_2018 %>%
+  pivot_longer(
+    cols = starts_with("Science_"),
+    names_to = "Group",
+    values_to = "Science"
+  )
+
+proficiency_2018_titleI<- data.frame(ELA=ELA_titleI_2018, Math=Math_titleI_2018, Science=Science_titleI_2018)
+proficiency_2018_titleI_long<- proficiency_2018_titleI %>%
+  pivot_longer(
+    cols=everything(),
+    names_to= c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency")
+  
+
+#combining information from ELA, Math, and Science proficiencies
+proficiency_2018_total<- data.frame(ELAI=ELA_titleI_2018, MathI=Math_titleI_2018, ScienceI=Science_titleI_2018, 
+                                     ELAN=ELA_non_titleI_2018, MathN=Math_non_titleI_2018, ScienceN=Science_non_titleI_2018)
+Proficiency_2018_long_total <- proficiency_2018_total %>%
+  pivot_longer(
+    cols = everything(),                # pivot all columns
+    names_to = c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency"
+  )
+```
+
+```{r 2018 graphs}
+#plot the average attendance rate:
+ggplot(Attendance_2018_long, aes(x = Group, y = Attendance, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Attendance by Title I Status in Sioux Falls (2018-19)", x="School Type", y="Average Attendance Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Attendance_titleI_2018" = "Title I Schools",
+    "Attendance_non_titleI_2018" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Attendance_titleI_2018" = "#226e9c", "Attendance_non_titleI_2018" = "#cf597e"), 
+    labels = c("Attendance_titleI_2018" = "Title I Schools", "Attendance_non_titleI_2018" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average absenteeism rate:
+ggplot(Absenteeism_2018_long, aes(x = Group, y = Absenteeism, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Absenteeism Rate by Title I Status in Sioux Falls (2018-19)", x="School Type", y="Average Absenteeism Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Absenteeism_titleI_2018" = "Title I Schools",
+    "Absenteeism_non_titleI_2018" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Absenteeism_titleI_2018" = "#226e9c", "Absenteeism_non_titleI_2018" = "#cf597e"), 
+    labels = c("Absenteeism_titleI_2018" = "Title I Schools", "Absenteeism_non_titleI_2018" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average proficiency scores 
+ggplot(Proficiency_2018_long_total, aes(x = Subject, y = Proficiency, fill = Group)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Proficiency by Subject and Title I Status (2018-19)",
+    x = "Subject",
+    y = "Proficiency Rate",
+    fill = "School Type"
+  ) +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "I" = "Title I Schools",
+    "N" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("I" = "#226e9c", "N" = "#cf597e"), 
+    labels = c("I" = "Title I Schools", "N" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+```
+
+```{r data manipulation- 2020}
+#Dividing between title I and Non Title I schools:
+titleI_2020 <- file_2020[file_2020[, 8] == "Yes", ]
+nonTitleI_2020 <- file_2020[file_2020[, 8] == "No", ]
+
+#extracting attendance information:
+Attendance_titleI_2020<- mean(titleI_2020$Attendance)
+Attendance_non_titleI_2020<- mean(nonTitleI_2020$Attendance)
+Attendance_2020<- data.frame (Attendance_titleI_2020, Attendance_non_titleI_2020, year=("2020"))
+Attendance_2020_long <- Attendance_2020 %>%
+  pivot_longer(
+    cols = starts_with("Attendance_"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+#extracting absenteeism informaiton:
+Absenteeism_titleI_2020<- mean (titleI_2020$Absenteeism)
+Absenteeism_non_titleI_2020<- mean (nonTitleI_2020$Absenteeism)
+Absenteeism_2020<- data.frame (Absenteeism_titleI_2020, Absenteeism_non_titleI_2020, year=("2020"))
+Absenteeism_2020_long <- Absenteeism_2020 %>%
+  pivot_longer(
+    cols = starts_with("Absenteeism_"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+#extracting proficiency scores
+ELA_titleI_2020<- mean (titleI_2020$ELA)
+ELA_non_titleI_2020<- mean (nonTitleI_2020$ELA)
+ELA_2020<- data.frame (ELA_titleI_2020, ELA_non_titleI_2020, year=("2020"))
+ELA_2020_long <- ELA_2020 %>%
+  pivot_longer(
+    cols = starts_with("ELA_"),
+    names_to = "Group",
+    values_to = "ELA"
+  )
+
+Math_titleI_2020<- mean (titleI_2020$Math)
+Math_non_titleI_2020<- mean (nonTitleI_2020$Math)
+Math_2020<- data.frame (Math_titleI_2020, Math_non_titleI_2020, year=("2020"))
+Math_2020_long <- Math_2020 %>%
+  pivot_longer(
+    cols = starts_with("Math_"),
+    names_to = "Group",
+    values_to = "Math"
+  )
+
+
+Science_titleI_2020<- mean (titleI_2020$Science)
+Science_non_titleI_2020<- mean (nonTitleI_2020$Science)
+Science_2020<- data.frame (Science_titleI_2020, Science_non_titleI_2020, year=("2020"))
+Science_2020_long <- Science_2020 %>%
+  pivot_longer(
+    cols = starts_with("Science_"),
+    names_to = "Group",
+    values_to = "Science"
+  )
+
+proficiency_2020_titleI<- data.frame(ELA=ELA_titleI_2020, Math=Math_titleI_2020, Science=Science_titleI_2020)
+proficiency_2020_titleI_long<- proficiency_2020_titleI %>%
+  pivot_longer(
+    cols=everything(),
+    names_to= c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency")
+  
+
+#combining information from ELA, Math, and Science proficiencies
+proficiency_2020_total<- data.frame(ELAI=ELA_titleI_2020, MathI=Math_titleI_2020, ScienceI=Science_titleI_2020, 
+                                     ELAN=ELA_non_titleI_2020, MathN=Math_non_titleI_2020, ScienceN=Science_non_titleI_2020)
+Proficiency_2020_long_total <- proficiency_2020_total %>%
+  pivot_longer(
+    cols = everything(),                # pivot all columns
+    names_to = c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency"
+  )
+```
+
+```{r 2020 graphs}
+#plot the average attendance rate:
+ggplot(Attendance_2020_long, aes(x = Group, y = Attendance, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Attendance by Title I Status in Sioux Falls (2020-21)", x="School Type", y="Average Attendance Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Attendance_titleI_2020" = "Title I Schools",
+    "Attendance_non_titleI_2020" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Attendance_titleI_2020" = "#226e9c", "Attendance_non_titleI_2020" = "#cf597e"), 
+    labels = c("Attendance_titleI_2020" = "Title I Schools", "Attendance_non_titleI_2020" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average absenteeism rate:
+ggplot(Absenteeism_2020_long, aes(x = Group, y = Absenteeism, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Absenteeism Rate by Title I Status in Sioux Falls (2020-21)", x="School Type", y="Average Absenteeism Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Absenteeism_titleI_2020" = "Title I Schools",
+    "Absenteeism_non_titleI_2020" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Absenteeism_titleI_2020" = "#226e9c", "Absenteeism_non_titleI_2020" = "#cf597e"), 
+    labels = c("Absenteeism_titleI_2020" = "Title I Schools", "Absenteeism_non_titleI_2020" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average proficiency scores 
+ggplot(Proficiency_2020_long_total, aes(x = Subject, y = Proficiency, fill = Group)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Proficiency by Subject and Title I Status (2020-21)",
+    x = "Subject",
+    y = "Proficiency Rate",
+    fill = "School Type"
+  ) +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "I" = "Title I Schools",
+    "N" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("I" = "#226e9c", "N" = "#cf597e"), 
+    labels = c("I" = "Title I Schools", "N" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+```
+
+```{r data manipulation- 2021} 
+#Dividing between title I and Non Title I schools:
+titleI_2021 <- file_2021[file_2021[, 8] == "Yes", ]
+nonTitleI_2021 <- file_2021[file_2021[, 8] == "No", ]
+
+#extracting attendance information:
+Attendance_titleI_2021<- mean(titleI_2021$Attendance)
+Attendance_non_titleI_2021<- mean(nonTitleI_2021$Attendance)
+Attendance_2021<- data.frame (Attendance_titleI_2021, Attendance_non_titleI_2021, year=("2021"))
+Attendance_2021_long <- Attendance_2021 %>%
+  pivot_longer(
+    cols = starts_with("Attendance_"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+#extracting absenteeism informaiton:
+Absenteeism_titleI_2021<- mean (titleI_2021$Absenteeism)
+Absenteeism_non_titleI_2021<- mean (nonTitleI_2021$Absenteeism)
+Absenteeism_2021<- data.frame (Absenteeism_titleI_2021, Absenteeism_non_titleI_2021, year=("2021"))
+Absenteeism_2021_long <- Absenteeism_2021 %>%
+  pivot_longer(
+    cols = starts_with("Absenteeism_"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+#extracting proficiency scores
+ELA_titleI_2021<- mean (titleI_2021$ELA)
+ELA_non_titleI_2021<- mean (nonTitleI_2021$ELA)
+ELA_2021<- data.frame (ELA_titleI_2021, ELA_non_titleI_2021, year=("2021"))
+ELA_2021_long <- ELA_2021 %>%
+  pivot_longer(
+    cols = starts_with("ELA_"),
+    names_to = "Group",
+    values_to = "ELA"
+  )
+
+Math_titleI_2021<- mean (titleI_2021$Math)
+Math_non_titleI_2021<- mean (nonTitleI_2021$Math)
+Math_2021<- data.frame (Math_titleI_2021, Math_non_titleI_2021, year=("2021"))
+Math_2021_long <- Math_2021 %>%
+  pivot_longer(
+    cols = starts_with("Math_"),
+    names_to = "Group",
+    values_to = "Math"
+  )
+
+
+Science_titleI_2021<- mean (titleI_2021$Science)
+Science_non_titleI_2021<- mean (nonTitleI_2021$Science)
+Science_2021<- data.frame (Science_titleI_2021, Science_non_titleI_2021, year=("2021"))
+Science_2021_long <- Science_2021 %>%
+  pivot_longer(
+    cols = starts_with("Science_"),
+    names_to = "Group",
+    values_to = "Science"
+  )
+
+proficiency_2021_titleI<- data.frame(ELA=ELA_titleI_2021, Math=Math_titleI_2021, Science=Science_titleI_2021)
+proficiency_2021_titleI_long<- proficiency_2021_titleI %>%
+  pivot_longer(
+    cols=everything(),
+    names_to= c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency")
+  
+
+#combining information from ELA, Math, and Science proficiencies
+proficiency_2021_total<- data.frame(ELAI=ELA_titleI_2021, MathI=Math_titleI_2021, ScienceI=Science_titleI_2021, 
+                                     ELAN=ELA_non_titleI_2021, MathN=Math_non_titleI_2021, ScienceN=Science_non_titleI_2021)
+Proficiency_2021_long_total <- proficiency_2021_total %>%
+  pivot_longer(
+    cols = everything(),                # pivot all columns
+    names_to = c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency"
+  )
+```
+
+```{r 2021 graphs}
+#plot the average attendance rate:
+ggplot(Attendance_2021_long, aes(x = Group, y = Attendance, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Attendance by Title I Status in Sioux Falls (2021-22)", x="School Type", y="Average Attendance Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Attendance_titleI_2021" = "Title I Schools",
+    "Attendance_non_titleI_2021" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Attendance_titleI_2021" = "#226e9c", "Attendance_non_titleI_2021" = "#cf597e"), 
+    labels = c("Attendance_titleI_2021" = "Title I Schools", "Attendance_non_titleI_2021" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average absenteeism rate:
+ggplot(Absenteeism_2021_long, aes(x = Group, y = Absenteeism, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Absenteeism Rate by Title I Status in Sioux Falls (2021-20)", x="School Type", y="Average Absenteeism Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Absenteeism_titleI_2021" = "Title I Schools",
+    "Absenteeism_non_titleI_2021" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Absenteeism_titleI_2021" = "#226e9c", "Absenteeism_non_titleI_2021" = "#cf597e"), 
+    labels = c("Absenteeism_titleI_2021" = "Title I Schools", "Absenteeism_non_titleI_2021" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average proficiency scores 
+ggplot(Proficiency_2021_long_total, aes(x = Subject, y = Proficiency, fill = Group)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Proficiency by Subject and Title I Status (2021-22)",
+    x = "Subject",
+    y = "Proficiency Rate",
+    fill = "School Type"
+  ) +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "I" = "Title I Schools",
+    "N" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("I" = "#226e9c", "N" = "#cf597e"), 
+    labels = c("I" = "Title I Schools", "N" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+```
+
+```{r data manipulation- 2022}
+#Dividing between title I and Non Title I schools:
+titleI_2022 <- file_2022[file_2022[, 8] == "Yes", ]
+nonTitleI_2022 <- file_2022[file_2022[, 8] == "No", ]
+
+#extracting attendance information:
+Attendance_titleI_2022<- mean(titleI_2022$Attendance)
+Attendance_non_titleI_2022<- mean(nonTitleI_2022$Attendance)
+Attendance_2022<- data.frame (Attendance_titleI_2022, Attendance_non_titleI_2022, year=("2022"))
+Attendance_2022_long <- Attendance_2022 %>%
+  pivot_longer(
+    cols = starts_with("Attendance_"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+#extracting absenteeism informaiton:
+Absenteeism_titleI_2022<- mean (titleI_2022$Absenteeism)
+Absenteeism_non_titleI_2022<- mean (nonTitleI_2022$Absenteeism)
+Absenteeism_2022<- data.frame (Absenteeism_titleI_2022, Absenteeism_non_titleI_2022, year=("2022"))
+Absenteeism_2022_long <- Absenteeism_2022 %>%
+  pivot_longer(
+    cols = starts_with("Absenteeism_"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+#extracting proficiency scores
+ELA_titleI_2022<- mean (titleI_2022$ELA)
+ELA_non_titleI_2022<- mean (nonTitleI_2022$ELA)
+ELA_2022<- data.frame (ELA_titleI_2022, ELA_non_titleI_2022, year=("2022"))
+ELA_2022_long <- ELA_2022 %>%
+  pivot_longer(
+    cols = starts_with("ELA_"),
+    names_to = "Group",
+    values_to = "ELA"
+  )
+
+Math_titleI_2022<- mean (titleI_2022$Math)
+Math_non_titleI_2022<- mean (nonTitleI_2022$Math)
+Math_2022<- data.frame (Math_titleI_2022, Math_non_titleI_2022, year=("2022"))
+Math_2022_long <- Math_2022 %>%
+  pivot_longer(
+    cols = starts_with("Math_"),
+    names_to = "Group",
+    values_to = "Math"
+  )
+
+
+Science_titleI_2022<- mean (titleI_2022$Science)
+Science_non_titleI_2022<- mean (nonTitleI_2022$Science)
+Science_2022<- data.frame (Science_titleI_2022, Science_non_titleI_2022, year=("2022"))
+Science_2022_long <- Science_2022 %>%
+  pivot_longer(
+    cols = starts_with("Science_"),
+    names_to = "Group",
+    values_to = "Science"
+  )
+
+proficiency_2022_titleI<- data.frame(ELA=ELA_titleI_2022, Math=Math_titleI_2022, Science=Science_titleI_2022)
+proficiency_2022_titleI_long<- proficiency_2022_titleI %>%
+  pivot_longer(
+    cols=everything(),
+    names_to= c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency")
+  
+
+#combining information from ELA, Math, and Science proficiencies
+proficiency_2022_total<- data.frame(ELAI=ELA_titleI_2022, MathI=Math_titleI_2022, ScienceI=Science_titleI_2022, 
+                                     ELAN=ELA_non_titleI_2022, MathN=Math_non_titleI_2022, ScienceN=Science_non_titleI_2022)
+Proficiency_2022_long_total <- proficiency_2022_total %>%
+  pivot_longer(
+    cols = everything(),                # pivot all columns
+    names_to = c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency"
+  )
+```
+
+```{r 2022 graphs}
+#plot the average attendance rate:
+ggplot(Attendance_2022_long, aes(x = Group, y = Attendance, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Attendance by Title I Status in Sioux Falls (2022-23)", x="School Type", y="Average Attendance Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Attendance_titleI_2022" = "Title I Schools",
+    "Attendance_non_titleI_2022" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Attendance_titleI_2022" = "#226e9c", "Attendance_non_titleI_2022" = "#cf597e"), 
+    labels = c("Attendance_titleI_2022" = "Title I Schools", "Attendance_non_titleI_2022" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average absenteeism rate:
+ggplot(Absenteeism_2022_long, aes(x = Group, y = Absenteeism, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Absenteeism Rate by Title I Status in Sioux Falls (2022-23)", x="School Type", y="Average Absenteeism Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Absenteeism_titleI_2022" = "Title I Schools",
+    "Absenteeism_non_titleI_2022" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Absenteeism_titleI_2022" = "#226e9c", "Absenteeism_non_titleI_2022" = "#cf597e"), 
+    labels = c("Absenteeism_titleI_2022" = "Title I Schools", "Absenteeism_non_titleI_2022" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average proficiency scores 
+ggplot(Proficiency_2022_long_total, aes(x = Subject, y = Proficiency, fill = Group)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Proficiency by Subject and Title I Status (2022-23)",
+    x = "Subject",
+    y = "Proficiency Rate",
+    fill = "School Type"
+  ) +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "I" = "Title I Schools",
+    "N" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("I" = "#226e9c", "N" = "#cf597e"), 
+    labels = c("I" = "Title I Schools", "N" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+```
+
+```{r data manipulation- 2023}
+#Dividing between title I and Non Title I schools:
+titleI_2023 <- file_2023[file_2023[, 8] == "Yes", ]
+nonTitleI_2023 <- file_2023[file_2023[, 8] == "No", ]
+
+#extracting attendance information:
+Attendance_titleI_2023<- mean(titleI_2023$Attendance)
+Attendance_non_titleI_2023<- mean(nonTitleI_2023$Attendance)
+Attendance_2023<- data.frame (Attendance_titleI_2023, Attendance_non_titleI_2023, year=("2023"))
+Attendance_2023_long <- Attendance_2023 %>%
+  pivot_longer(
+    cols = starts_with("Attendance_"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+#extracting absenteeism informaiton:
+Absenteeism_titleI_2023<- mean (titleI_2023$Absenteeism)
+Absenteeism_non_titleI_2023<- mean (nonTitleI_2023$Absenteeism)
+Absenteeism_2023<- data.frame (Absenteeism_titleI_2023, Absenteeism_non_titleI_2023, year=("2023"))
+Absenteeism_2023_long <- Absenteeism_2023 %>%
+  pivot_longer(
+    cols = starts_with("Absenteeism_"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+#extracting proficiency scores
+ELA_titleI_2023<- mean (titleI_2023$ELA)
+ELA_non_titleI_2023<- mean (nonTitleI_2023$ELA)
+ELA_2023<- data.frame (ELA_titleI_2023, ELA_non_titleI_2023, year=("2023"))
+ELA_2023_long <- ELA_2023 %>%
+  pivot_longer(
+    cols = starts_with("ELA_"),
+    names_to = "Group",
+    values_to = "ELA"
+  )
+
+Math_titleI_2023<- mean (titleI_2023$Math)
+Math_non_titleI_2023<- mean (nonTitleI_2023$Math)
+Math_2023<- data.frame (Math_titleI_2023, Math_non_titleI_2023, year=("2023"))
+Math_2023_long <- Math_2023 %>%
+  pivot_longer(
+    cols = starts_with("Math_"),
+    names_to = "Group",
+    values_to = "Math"
+  )
+
+
+Science_titleI_2023<- mean (titleI_2023$Science)
+Science_non_titleI_2023<- mean (nonTitleI_2023$Science)
+Science_2023<- data.frame (Science_titleI_2023, Science_non_titleI_2023, year=("2023"))
+Science_2023_long <- Science_2023 %>%
+  pivot_longer(
+    cols = starts_with("Science_"),
+    names_to = "Group",
+    values_to = "Science"
+  )
+
+proficiency_2023_titleI<- data.frame(ELA=ELA_titleI_2023, Math=Math_titleI_2023, Science=Science_titleI_2023)
+proficiency_2023_titleI_long<- proficiency_2023_titleI %>%
+  pivot_longer(
+    cols=everything(),
+    names_to= c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency")
+  
+
+#combining information from ELA, Math, and Science proficiencies
+proficiency_2023_total<- data.frame(ELAI=ELA_titleI_2023, MathI=Math_titleI_2023, ScienceI=Science_titleI_2023, 
+                                     ELAN=ELA_non_titleI_2023, MathN=Math_non_titleI_2023, ScienceN=Science_non_titleI_2023)
+Proficiency_2023_long_total <- proficiency_2023_total %>%
+  pivot_longer(
+    cols = everything(),                # pivot all columns
+    names_to = c("Subject", "Group"),  # split names into two parts
+    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    values_to = "Proficiency"
+  )
+```
+
+```{r 2023 graphs}
+#plot the average attendance rate:
+ggplot(Attendance_2023_long, aes(x = Group, y = Attendance, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Attendance by Title I Status in Sioux Falls (2023-24)", x="School Type", y="Average Attendance Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Attendance_titleI_2023" = "Title I Schools",
+    "Attendance_non_titleI_2023" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Attendance_titleI_2023" = "#226e9c", "Attendance_non_titleI_2023" = "#cf597e"), 
+    labels = c("Attendance_titleI_2023" = "Title I Schools", "Attendance_non_titleI_2023" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average absenteeism rate:
+ggplot(Absenteeism_2023_long, aes(x = Group, y = Absenteeism, fill = Group)) +
+  geom_bar(stat = "identity") +
+  labs(title="Average Absenteeism Rate by Title I Status in Sioux Falls (2023-24)", x="School Type", y="Average Absenteeism Rate") +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "Absenteeism_titleI_2023" = "Title I Schools",
+    "Absenteeism_non_titleI_2023" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("Absenteeism_titleI_2023" = "#226e9c", "Absenteeism_non_titleI_2023" = "#cf597e"), 
+    labels = c("Absenteeism_titleI_2023" = "Title I Schools", "Absenteeism_non_titleI_2023" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#plot the average proficiency scores 
+ggplot(Proficiency_2023_long_total, aes(x = Subject, y = Proficiency, fill = Group)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(
+    title = "Proficiency by Subject and Title I Status (2023-24)",
+    x = "Subject",
+    y = "Proficiency Rate",
+    fill = "School Type"
+  ) +
+  #Renames the legends of the X axis
+  scale_x_discrete(labels = c(
+    "I" = "Title I Schools",
+    "N" = "Non-Title I Schools"
+  )) +
+  #renames the color legends 
+  scale_fill_manual(
+    values = c("I" = "#226e9c", "N" = "#cf597e"), 
+    labels = c("I" = "Title I Schools", "N" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+```
+
+School District Data
+```{r school district data}
+school_district<- data.frame (year=c("2017-18",
+                                     "2018-19",
+                                     "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                              Attendance=c(92,
+                                           91, 
+                                           NA,
+                                           89,
+                                           86,
+                                           85,
+                                           85),
+                              Absenteeism=c(17,
+                                            18,
+                                            NA,
+                                            18,
+                                            24,
+                                            25,
+                                            26), 
+                              ELA=c(53,
+                                    51,
+                                    NA,
+                                    48,
+                                    49,
+                                    48,
+                                    50),
+                              Math=c(47,
+                                     44,
+                                     NA,
+                                     39,
+                                     41,
+                                     43,
+                                     44),
+                              Science=c(49,
+                                        42,
+                                        NA,
+                                        44,
+                                        43,
+                                        45,
+                                        48))
+#attendance
+ggplot(school_district, aes(x = factor(year), y = Attendance, group = 1)) +
+  geom_point(size = 3) +
+  geom_line(color = "blue", size = 1.25, group = 1) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  geom_text(aes(label = paste0(Attendance, "%")), vjust = -1) +
+  labs(title = "Average Rate of Attendance in the School District of Sioux Falls", 
+       x = "School Year", 
+       y = "Average Attendance Rates") +
+  theme_minimal()
+
+#absenteeism
+ggplot(school_district, aes(x = factor(year), y = Absenteeism, group = 1)) +
+  geom_point(size = 3) +
+  geom_line(color = "blue", size = 1.25, group = 1) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  geom_text(aes(label = paste0(Absenteeism, "%")), vjust = -1) +
+  labs(title = "Average Rate of Absenteeism in the School District of Sioux Falls", 
+       x = "School Year", 
+       y = "Average Absenteeism Rates") +
+  theme_minimal()
+
+#proficencies
+proficiencies <- school_district %>%
+  pivot_longer(cols = c("ELA", "Math", "Science"), 
+               names_to = "Subject", 
+               values_to = "Score")
+
+ggplot(proficiencies, aes(x = year, y = Score, color = Subject, group=Subject)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(title = "Sioux Falls School District Performance by Subject",
+       x = "Year",
+       y = "Score (%)") +
+  theme_minimal()
+```
+
+LBA data
+```{r LBA data}
+LBA_data<- data.frame (Year=c("2017-18",
+                                     "2018-19",
+                                     "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"), 
+                       Attendance=c(93, 
+                                    86,
+                                    NA,
+                                    85,
+                                    81,
+                                    84,
+                                    87), 
+                       Absenteeism=c(14,
+                                     20,
+                                     NA,
+                                     19,
+                                     26,
+                                     21,
+                                     20), 
+                       ELA=c(41, 
+                             38,
+                             NA,
+                             36,
+                             26,
+                             28,
+                             31), 
+                       Math=c(29,
+                              30,
+                              NA,
+                              20,
+                              27,
+                              26,
+                              20), 
+                       Science=c(20,
+                                 14,
+                                 NA,
+                                 20,
+                                 16,
+                                 13,
+                                 17))
+
+
+ggplot(LBA_data, aes(x = factor(Year), y = Attendance, group = 1)) +
+  geom_point(size = 3) +
+  geom_line(color = "blue", size = 1.25, group = 1) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  geom_text(aes(label = paste0(Attendance, "%")), vjust = -1) +
+  labs(title = "Average Rate of Attendance of Laura B. Anderson Elementary", 
+       x = "School Year", 
+       y = "Average Attendance Rates") +
+  theme_minimal()
+
+
+ggplot(LBA_data, aes(x = factor(Year), y = Absenteeism, group = 1)) +
+  geom_point(size = 3) +
+  geom_line(color = "blue", size = 1.25, group = 1) +
+  scale_y_continuous(labels = function(x) paste0(x, "%")) +
+  geom_text(aes(label = paste0(Absenteeism, "%")), vjust = -1) +
+  labs(title = "Average Rate of Absenteeism of Laura B. Anderson Elementary", 
+       x = "School Year", 
+       y = "Average Absenteeism Rates") +
+  theme_minimal()
+
+
+#proficencies
+proficiencies <- LBA_data %>%
+  pivot_longer(cols = c("ELA", "Math", "Science"), 
+               names_to = "Subject", 
+               values_to = "Score")
+
+ggplot(proficiencies, aes(x = Year, y = Score, color = Subject, group=Subject)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(title = "Laura B. Anderson Elementary Performance by Subject",
+       x = "Year",
+       y = "Score (%)") +
+  theme_minimal()
+```
+
+Plotting the comparision of LBA and school district
+```{r LBA v School District}
+#to compare their attendance rates, first make a new data frame combining both
+#then convert the long format with dplyr
+#plot
+LBA_district_attendance<- data.frame(Year=c("2017-18",
+                                     "2018-19",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"), 
+                           LBA=LBA_data$Attendance, 
+                           district=school_district$Attendance)
+
+LBA_district_attendance <- LBA_district_attendance %>%
+  pivot_longer(
+    cols = c(LBA, district),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+
+ggplot(LBA_district_attendance, aes(x = Year, y = Attendance, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = c("LBA" = "#226e9c", "district" = "#cf597e")) +
+  labs(title="Average Attendance of Laura B. Anderson and the Sioux Falls School District", 
+       x="School Year", 
+       y="Average Attendance (%)")+
+  theme_minimal()
+
+
+#absenteeism
+LBA_district_absenteeism<- data.frame(Year=c("2017-18",
+                                     "2018-19",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"), 
+                           LBA=LBA_data$Absenteeism, 
+                           district=school_district$Absenteeism)
+
+LBA_district_absenteeism <- LBA_district_absenteeism %>%
+  pivot_longer(
+    cols = c(LBA, district),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+
+ggplot(LBA_district_absenteeism, aes(x =Year, y =Absenteeism, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = c("LBA" = "#226e9c", "district" = "#cf597e")) +
+  labs(title="Average Absenteeism of Laura B. Anderson and the Sioux Falls School District", 
+       x="School Year", 
+       y="Average Absenteeism (%)")+
+  theme_minimal()
+
+
+
+#proficiencies
+LBA_district_proficiencies<- data.frame(Year=c("2017-18",
+                                     "2018-19",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"), 
+                           LBA_math=LBA_data$Math, 
+                           LBA_Science=LBA_data$Science,
+                           LBA_ELA=LBA_data$ELA,
+                           district_Math=school_district$Math, 
+                           district_Science=school_district$Science,
+                           district_ELA=school_district$ELA)
+
+LBA_district_proficiencies <- LBA_district_proficiencies %>%
+  pivot_longer(
+    cols = c(LBA_math, LBA_Science, LBA_ELA, district_Math, district_Science, district_ELA),
+    names_to = "Group",
+    values_to = "Subjects"
+  )
+
+ggplot(LBA_district_proficiencies, aes(x =Year, y =Subjects, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = c("LBA_math" = "#1f77b4",       # blue
+    "LBA_Science" = "#aec7e8",    # lighter blue
+    "LBA_ELA" = "#ff7f0e",        # orange
+    "district_Math" = "#2ca02c",  # green
+    "district_Science" = "#98df8a", # lighter green
+    "district_ELA" = "#d62728" )) +
+  labs(title="Average Absenteeism of Laura B. Anderson and the Sioux Falls School District", 
+       x="School Year", 
+       y="Average Absenteeism (%)")+
+  theme_minimal()
+
+```
+
+Comparision by Title I status
+```{r Title I v Non-Title I}
+Attendance<- data.frame(Year=c("2017-18",
+                                     "2018-19",
+                                     "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                               "Title I Attendance"=
+                              c(Attendance_2017$Attendance_titleI_2017, 
+                               Attendance_2018$Attendance_titleI_2018, 
+                               NA,
+                               Attendance_2020$Attendance_titleI_2020,
+                               Attendance_2021$Attendance_titleI_2021, 
+                               Attendance_2022$Attendance_titleI_2022, 
+                               Attendance_2023$Attendance_titleI_2023), 
+                              "Non-Title I Attendance"=
+                              c(Attendance_2017$Attendance_non_titleI_2017, 
+                               Attendance_2018$Attendance_non_titleI_2018, 
+                               NA,
+                               Attendance_2020$Attendance_non_titleI_2020,
+                               Attendance_2021$Attendance_non_titleI_2021, 
+                               Attendance_2022$Attendance_non_titleI_2022, 
+                               Attendance_2023$Attendance_non_titleI_2023))
+Attendance$Year <- factor(Attendance$Year, 
+                          levels = c("2017-18", "2018-19", "2019-20", 
+                                     "2020-21", "2021-22", "2022-23", "2023-24"))
+
+
+Attendance <- Attendance %>%
+  pivot_longer(
+    cols = c("Title.I.Attendance", "Non.Title.I.Attendance"),
+    names_to = "Group",
+    values_to = "Attendance"
+  )
+ggplot(Attendance, aes(x = Year, y = Attendance, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(stat = "identity", size = 1.25) +
+  labs(
+    title = "Average Attendance Rates of Title I and Non-Title I Schools in Sioux Falls",
+    x = "Year",
+    y = "Average Attendance"
+  ) +
+  scale_color_manual(
+    values = c("Title.I.Attendance" = "#1f77b4", "Non.Title.I.Attendance" = "#cf597e"),
+    labels = c("Title.I.Attendance" = "Title I Schools", 
+               "Non.Title.I.Attendance" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+
+#absenteeism
+Absenteeism<- data.frame(Year=c("2017-18",
+                                     "2018-19",
+                                      "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                               "Title I Absenteeism"=
+                              c(Absenteeism_2017$Absenteeism_titleI_2017, 
+                               Absenteeism_2018$Absenteeism_titleI_2018, 
+                               NA,
+                               Absenteeism_2020$Absenteeism_titleI_2020,
+                               Absenteeism_2021$Absenteeism_titleI_2021, 
+                               Absenteeism_2022$Absenteeism_titleI_2022, 
+                               Absenteeism_2023$Absenteeism_titleI_2023), 
+                              "Non-Title I Absenteeism"=
+                              c(Absenteeism_2017$Absenteeism_non_titleI_2017, 
+                               Absenteeism_2018$Absenteeism_non_titleI_2018, 
+                               NA,
+                               Absenteeism_2020$Absenteeism_non_titleI_2020,
+                               Absenteeism_2021$Absenteeism_non_titleI_2021, 
+                               Absenteeism_2022$Absenteeism_non_titleI_2022, 
+                               Absenteeism_2023$Absenteeism_non_titleI_2023))
+Absenteeism$Year <- factor(Absenteeism$Year, 
+                          levels = c("2017-18", "2018-19", "2019-20", 
+                                     "2020-21", "2021-22", "2022-23", "2023-24"))
+
+Absenteeism <- Absenteeism %>%
+  pivot_longer(
+    cols = c("Title.I.Absenteeism", "Non.Title.I.Absenteeism"),
+    names_to = "Group",
+    values_to = "Absenteeism"
+  )
+ggplot(Absenteeism, aes(x=factor(Year), y=Absenteeism, group=Group, color=Group)) +
+  geom_point(size=3) +
+  geom_line(stat="identity", size=1.25) +
+   labs(title="Average Absenteeism Rates of Title I and Non-Title I Schools in Sioux Falls", 
+       x="Year", 
+       y="Average Absenteeism") +
+  scale_color_manual(
+    values = c("Title.I.Absenteeism" = "#1f77b4", "Non.Title.I.Absenteeism" = "#cf597e"),
+    labels = c("Title.I.Absenteeism" = "Title I Schools", 
+               "Non.Title.I.Absenteeism" = "Non-Title I Schools")
+  ) +
+  theme_minimal()
+
+#proficiencies 
+proficiencies<- data.frame(Year=c("2017-18",
+                                     "2018-19",
+                                  "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                               "Title I ELA Scores"=
+                              c(ELA_2017$ELA_titleI_2017, 
+                               ELA_2018$ELA_titleI_2018, 
+                               NA,
+                               ELA_2020$ELA_titleI_2020, 
+                               ELA_2021$ELA_titleI_2021, 
+                               ELA_2022$ELA_titleI_2022, 
+                               ELA_2023$ELA_titleI_2023), 
+                              "Non-Title I ELA Scores"=
+                              c(ELA_2017$ELA_non_titleI_2017, 
+                               ELA_2018$ELA_non_titleI_2018, 
+                               NA,
+                               ELA_2020$ELA_non_titleI_2020, 
+                               ELA_2021$ELA_non_titleI_2021, 
+                               ELA_2022$ELA_non_titleI_2022, 
+                               ELA_2023$ELA_non_titleI_2023), 
+                           "Title I Math Scores"=
+                             c(Math_2017$Math_titleI_2017,
+                               Math_2018$Math_titleI_2018,
+                               NA,
+                               Math_2020$Math_titleI_2020,
+                               Math_2021$Math_titleI_2021,
+                               Math_2022$Math_titleI_2022,
+                               Math_2023$Math_titleI_2023),
+                           "Non-Title I Math Scores"=
+                             c(Math_2017$Math_non_titleI_2017,
+                               Math_2018$Math_non_titleI_2018,
+                               NA,
+                               Math_2020$Math_non_titleI_2020,
+                               Math_2021$Math_non_titleI_2021,
+                               Math_2022$Math_non_titleI_2022,
+                               Math_2023$Math_non_titleI_2023),
+                          "Title I Science Scores"=
+                            c(Science_2017$Science_titleI_2017,
+                              Science_2018$Science_titleI_2018,
+                              NA,
+                              Science_2020$Science_titleI_2020,
+                              Science_2021$Science_titleI_2021,
+                              Science_2022$Science_titleI_2022,
+                              Science_2023$Science_titleI_2023),
+                          "Non-Title I Science Scores"=
+                            c(Science_2017$Science_non_titleI_2017,
+                              Science_2018$Science_non_titleI_2018,
+                              NA,
+                              Science_2020$Science_non_titleI_2020,
+                              Science_2021$Science_non_titleI_2021,
+                              Science_2022$Science_non_titleI_2022,
+                              Science_2023$Science_non_titleI_2023))
+
+
+proficiencies <- proficiencies %>%
+  pivot_longer(
+    cols = c("Title.I.ELA.Scores", "Non.Title.I.ELA.Scores", "Title.I.Math.Scores", "Non.Title.I.Math.Scores", "Title.I.Science.Scores", "Non.Title.I.Science.Scores"),
+    names_to = "Group",
+    values_to = "proficiencies"
+  )
+
+ggplot (proficiencies, aes (x=Year, y=proficiencies, group=Group, color=Group)) +
+  geom_point (size=3) +
+  geom_line(stat="identity", size=1.25) +
+  labs(title="Average Proficiency Rates of Title I and Non-Title I Schools in Sioux Falls", 
+       x="Year", 
+       y="Average Proficiency Rates") +
+  scale_color_manual(
+    values = c("Title.I.ELA.Scores" = "#1f77b4", "Non.Title.I.ELA.Scores" = "#cf597e", 
+               "Title.I.Math.Scores"="green", "Non.Title.I.Math.Scores"="red", 
+               "Title.I.Science.Scores"="orange", "Title.I.Science.Scores"="pink"),
+    labels = c("Title.I.ELA.Scores" = "Title I ELA Scores", "Non.Title.I.ELA.Scores" = "Non-Title I ELA Scores", 
+               "Title.I.Math.Scores"="Title I Math Scores", "Non.Title.I.Math.Scores"="Non-Title I Math Scores", 
+               "Title.I.Science.Scores"="Title I Science Scores", "Title.I.Science.Scores"="Title I Science Scores")
+  ) +
+  theme_minimal()
+
+```
+
+LBA vs Title I
+```{r LBA v Title I}
+#attendance
+LBA_TitleI<- data.frame (Year=c("2017-18",
+                                     "2018-19",
+                                "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                         LBA=c(LBA_data$Attendance[1],
+                               LBA_data$Attendance[2],
+                               LBA_data$Attendance[3],
+                               LBA_data$Attendance[4],
+                               LBA_data$Attendance[5],
+                               LBA_data$Attendance[6],
+                               LBA_data$Attendance[7]), 
+                         TitleI=c(Attendance_titleI_2017*100,
+                                  Attendance_titleI_2018*100, 
+                                  NA,
+                                  Attendance_titleI_2020*100, 
+                                  Attendance_titleI_2021*100, 
+                                  Attendance_titleI_2022*100, 
+                                  Attendance_titleI_2023*100
+                         ))
+LBA_TitleI<- LBA_TitleI%>%
+  pivot_longer(cols = c("LBA", "TitleI"),
+    names_to = "Group",
+    values_to = "Attendance" 
+               )
+ggplot(LBA_TitleI, aes(x = factor(Year), y = Attendance, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(stat = "identity", size = 1.25) +
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e"),
+    labels = c("LBA" = "Laura B. Anderson", "TitleI" = "Other Title I Schools")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Average Attendance Rates of Laura B. Anderson Elementary as Compared to Other Title I Schools", 
+    x = "Year", 
+    y = "Average Attendance Rates"
+  ) +
+  theme(
+    plot.title = element_text(
+      family = "Arial",
+      face = "bold",
+      size = 10
+    )
+  )
+
+LBA_TitleI_absenteeism<- data.frame (Year=c("2017-18",
+                                     "2018-19",
+                                "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                         LBA=c(LBA_data$Absenteeism[1],
+                               LBA_data$Absenteeism[2],
+                               LBA_data$Absenteeism[3],
+                               LBA_data$Absenteeism[4],
+                               LBA_data$Absenteeism[5],
+                               LBA_data$Absenteeism[6],
+                               LBA_data$Absenteeism[7]), 
+                         TitleI=c(Absenteeism_titleI_2017*100,
+                                  Absenteeism_titleI_2018*100, 
+                                  NA,
+                                  Absenteeism_titleI_2020*100, 
+                                  Absenteeism_titleI_2021*100, 
+                                  Absenteeism_titleI_2022*100, 
+                                  Absenteeism_titleI_2023*100
+                         ))
+LBA_TitleI_absenteeism<- LBA_TitleI_absenteeism%>%
+  pivot_longer(cols = c("LBA", "TitleI"),
+    names_to = "Group",
+    values_to = "Absenteeism" 
+               )
+ggplot(LBA_TitleI_absenteeism, aes(x = factor(Year), y = Absenteeism, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(stat = "identity", size = 1.25) +
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e"),
+    labels = c("LBA" = "Laura B. Anderson", "TitleI" = "Other Title I Schools")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Average Absenteeism Rates of Laura B. Anderson Elementary as Compared to Other Title I Schools", 
+    x = "Year", 
+    y = "Average Absenteeism Rates"
+  ) +
+  theme(
+    plot.title = element_text(
+      family = "Arial",
+      face = "bold",
+      size = 10
+    )
+  )
+
+
+LBA_TitleI_proficiency_ELA<- data.frame (Year=c("2017-18",
+                                     "2018-19",
+                                "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                         LBA=c(LBA_data$ELA[1],
+                               LBA_data$ELA[2],
+                               LBA_data$ELA[3],
+                               LBA_data$ELA[4],
+                               LBA_data$ELA[5],
+                               LBA_data$ELA[6],
+                               LBA_data$ELA[7]),
+                         TitleI=c(ELA_titleI_2017*100,
+                                  ELA_titleI_2018*100, 
+                                  NA,
+                                  ELA_titleI_2020*100, 
+                                  ELA_titleI_2021*100, 
+                                  ELA_titleI_2022*100, 
+                                  ELA_titleI_2023*100
+                         ))
+LBA_TitleI_proficiency_Math<- data.frame (Year=c("2017-18",
+                                     "2018-19",
+                                "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),
+                                LBA=c(LBA_data$Math[1],
+                               LBA_data$Math[2],
+                               LBA_data$Math[3],
+                               LBA_data$Math[4],
+                               LBA_data$Math[5],
+                               LBA_data$Math[6],
+                               LBA_data$Math[7]),
+                               
+                               TitleI=c(Math_titleI_2017*100,
+                                  Math_titleI_2018*100, 
+                                  NA,
+                                 Math_titleI_2020*100, 
+                                  Math_titleI_2021*100, 
+                                  Math_titleI_2022*100, 
+                                  Math_titleI_2023*100))
+LBA_TitleI_proficiency_Science<- data.frame (Year=c("2017-18",
+                                     "2018-19",
+                                "2019-20",
+                                     "2020-21",
+                                     "2021-22",
+                                     "2022-23",
+                                    "2023-24"),                         
+                         LBA=c(LBA_data$Science[1],
+                               LBA_data$Science[2],
+                               LBA_data$Science[3],
+                               LBA_data$Science[4],
+                               LBA_data$Science[5],
+                               LBA_data$Science[6],
+                               LBA_data$Science[7]),
+                  
+                         TitleI=c(Science_titleI_2017*100,
+                                  Science_titleI_2018*100, 
+                                  NA,
+                                  Science_titleI_2020*100, 
+                                  Science_titleI_2021*100, 
+                                  Science_titleI_2022*100, 
+                                  Science_titleI_2023*100))
+
+LBA_TitleI_proficiency_ELA<- LBA_TitleI_proficiency_ELA%>%
+  pivot_longer(cols = c("LBA", "TitleI"),
+    names_to = "Group",
+    values_to = "Proficiency" 
+               )
+
+LBA_TitleI_proficiency_Math<- LBA_TitleI_proficiency_Math%>%
+  pivot_longer(cols = c("LBA", "TitleI"),
+    names_to = "Group",
+    values_to = "Proficiency" 
+               )
+LBA_TitleI_proficiency_Science<- LBA_TitleI_proficiency_Science%>%
+  pivot_longer(cols = c("LBA", "TitleI"),
+    names_to = "Group",
+    values_to = "Proficiency" 
+               )
+
+ggplot(LBA_TitleI_proficiency_ELA, aes(x = factor(Year), y = Proficiency, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(stat = "identity", size = 1.25) +
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e"),
+    labels = c("LBA" = "Laura B. Anderson's ELA Scores", "TitleI" = "Other Title I Schools' ELA Scores")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Average ELA Proficiency Rates of Laura B. Anderson Elementary as Compared to Other Title I Schools", 
+    x = "Year", 
+    y = "Average ELA Proficiency Rates"
+  ) +
+  theme(
+    plot.title = element_text(
+      family = "Arial",
+      face = "bold",
+      size = 10
+    )
+  )
+
+ggplot(LBA_TitleI_proficiency_Math, aes(x = factor(Year), y = Proficiency, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(stat = "identity", size = 1.25) +
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e"),
+    labels = c("LBA" = "Laura B. Anderson's Math Scores", "TitleI" = "Other Title I Schools' Math Scores")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Average Math Proficiency Rates of Laura B. Anderson Elementary as Compared to Other Title I Schools", 
+    x = "Year", 
+    y = "Average Math Proficiency Rates"
+  ) +
+  theme(
+    plot.title = element_text(
+      family = "Arial",
+      face = "bold",
+      size = 10
+    )
+  )
+
+ggplot(LBA_TitleI_proficiency_Science, aes(x = factor(Year), y = Proficiency, group = Group, color = Group)) +
+  geom_point(size = 3) +
+  geom_line(stat = "identity", size = 1.25) +
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e"),
+    labels = c("LBA" = "Laura B. Anderson's Science Scores", "TitleI" = "Other Title I Schools' Science Scores")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Average Science Proficiency Rates of Laura B. Anderson Elementary as Compared to Other Title I Schools", 
+    x = "Year", 
+    y = "Average Science Proficiency Rates"
+  ) +
+  theme(
+    plot.title = element_text(
+      family = "Arial",
+      face = "bold",
+      size = 9.5
+    )
+  )
+```
+Plot district average, elementary average, Title I, non-Title I, and LBA trends all on the same graph?
+
+```{r everything}
+
+everything <- data.frame(
+  Year = c("2017-18", 
+           "2018-19",
+           "2019-20",
+           "2020-21", 
+           "2021-22", 
+           "2022-23", 
+           "2023-24"), 
+  TitleI = c(
+    mean(titleI_2017$Attendance*100), 
+    mean(titleI_2018$Attendance*100), 
+    NA,
+    mean(titleI_2020$Attendance*100), 
+    mean(titleI_2021$Attendance*100), 
+    mean(titleI_2022$Attendance*100), 
+    mean(titleI_2023$Attendance*100)
+  ), 
+  NonTitleI = c(
+    mean(nonTitleI_2017$Attendance*100),
+    mean(nonTitleI_2018$Attendance*100),
+    NA,
+    mean(nonTitleI_2020$Attendance*100),
+    mean(nonTitleI_2021$Attendance*100),
+    mean(nonTitleI_2022$Attendance*100),
+    mean(nonTitleI_2023$Attendance*100)
+  ), 
+  LBA = c(LBA_data$Attendance[1], 
+          LBA_data$Attendance[2],
+          NA, 
+          LBA_data$Attendance[3],
+          LBA_data$Attendance[4], 
+          LBA_data$Attendance[5], 
+          LBA_data$Attendance[6]), 
+  school_district=c(school_district$Attendance[1],
+                    school_district$Attendance[2], 
+                    NA, 
+                    school_district$Attendance[3], 
+                    school_district$Attendance[4],
+                    school_district$Attendance[5], 
+                    school_district$Attendance[6]), 
+  elementary_average=c(mean(file_2017$Attendance*100), 
+                       mean(file_2018$Attendance*100), 
+                       NA,
+                       mean(file_2020$Attendance*100), 
+                       mean(file_2021$Attendance*100),
+                       mean(file_2022$Attendance*100), 
+                       mean(file_2023$Attendance*100))
+)
+
+everything_long<- everything%>%
+  pivot_longer(cols = c("TitleI", "NonTitleI", "LBA", "school_district", "elementary_average"),
+    names_to = "Group",
+    values_to = "Attendance")
+
+ggplot (everything_long, aes(x=factor(Year), y=Attendance, group=Group, color=Group)) +
+  geom_point(size=3) +
+  geom_line(stat="identity", size=1.25)+
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e", "NonTitleI"="green", "school_district"="orange", "elementary_average"="pink"),
+    labels = c("LBA" = "Laura B. Anderson", "TitleI" = "Title I Schools", "NonTitleI"="Non-Title I Schools", "school_district"="School District", "elementary_average"="Elementary Average")
+  ) +
+  labs(
+    title = "Average Attendance Rates from 2017-24", 
+    x = "Year", 
+    y = "Average Attendance Rates"
+  ) +
+  theme_minimal()
+
+
+
+
+everything_absenteeism <- data.frame(
+  Year = c("2017-18", 
+           "2018-19",
+           "2019-20",
+           "2020-21", 
+           "2021-22", 
+           "2022-23", 
+           "2023-24"), 
+  TitleI = c(
+    mean(titleI_2017$Absenteeism*100), 
+    mean(titleI_2018$Absenteeism*100), 
+    NA,
+    mean(titleI_2020$Absenteeism*100), 
+    mean(titleI_2021$Absenteeism*100), 
+    mean(titleI_2022$Absenteeism*100), 
+    mean(titleI_2023$Absenteeism*100)
+  ), 
+  NonTitleI = c(
+    mean(nonTitleI_2017$Absenteeism*100),
+    mean(nonTitleI_2018$Absenteeism*100),
+    NA,
+    mean(nonTitleI_2020$Absenteeism*100),
+    mean(nonTitleI_2021$Absenteeism*100),
+    mean(nonTitleI_2022$Absenteeism*100),
+    mean(nonTitleI_2023$Absenteeism*100)
+  ), 
+  LBA = c(LBA_data$Absenteeism[1], 
+          LBA_data$Absenteeism[2],
+          NA, 
+          LBA_data$Absenteeism[3],
+          LBA_data$Absenteeism[4], 
+          LBA_data$Absenteeism[5], 
+          LBA_data$Absenteeism[6]), 
+  school_district=c(school_district$Absenteeism[1],
+                    school_district$Absenteeism[2], 
+                    NA, 
+                    school_district$Absenteeism[3], 
+                    school_district$Absenteeism[4],
+                    school_district$Absenteeism[5], 
+                    school_district$Absenteeism[6]), 
+  elementary_average=c(mean(file_2017$Absenteeism*100), 
+                       mean(file_2018$Absenteeism*100), 
+                       NA,
+                       mean(file_2020$Absenteeism*100), 
+                       mean(file_2021$Absenteeism*100),
+                       mean(file_2022$Absenteeism*100), 
+                       mean(file_2023$Absenteeism*100))
+)
+
+everything_long_absenteeism<- everything_absenteeism%>%
+  pivot_longer(cols = c("TitleI", "NonTitleI", "LBA", "school_district", "elementary_average"),
+    names_to = "Group",
+    values_to = "Absenteeism")
+
+ggplot (everything_long_absenteeism, aes(x=factor(Year), y=Absenteeism, group=Group, color=Group)) +
+  geom_point(size=3) +
+  geom_line(stat="identity", size=1.25)+
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "TitleI" = "#cf597e", "NonTitleI"="green", "school_district"="orange", "elementary_average"="pink"),
+    labels = c("LBA" = "Laura B. Anderson", "TitleI" = "Title I Schools", "NonTitleI"="Non-Title I Schools", "school_district"="School District", "elementary_average"="Elementary Average")
+  ) +
+  labs(
+    title = "Average Absenteeism Rates from 2017-24", 
+    x = "Year", 
+    y = "Average Absenteeism Rates"
+  ) +
+  theme_minimal()
+
+
+
+
+
+
+everything_proficiency <- data.frame(
+  Year = c("2017-18", 
+           "2018-19",
+           "2019-20",
+           "2020-21", 
+           "2021-22", 
+           "2022-23", 
+           "2023-24"), 
+  TitleI_ELA = c(
+    mean(titleI_2017$ELA*100), 
+    mean(titleI_2018$ELA*100), 
+    NA,
+    mean(titleI_2020$ELA*100), 
+    mean(titleI_2021$ELA*100), 
+    mean(titleI_2022$ELA*100), 
+    mean(titleI_2023$ELA*100)
+  ), 
+  TitleI_Math = c(
+    mean(titleI_2017$Math*100), 
+    mean(titleI_2018$Math*100), 
+    NA,
+    mean(titleI_2020$Math*100), 
+    mean(titleI_2021$Math*100), 
+    mean(titleI_2022$Math*100), 
+    mean(titleI_2023$Math*100)
+  ),
+  TitleI_Science = c(
+    mean(titleI_2017$Science*100), 
+    mean(titleI_2018$Science*100), 
+    NA,
+    mean(titleI_2020$Science*100), 
+    mean(titleI_2021$Science*100), 
+    mean(titleI_2022$Science*100), 
+    mean(titleI_2023$Science*100)
+  ),
+  Non_TitleI_ELA = c(
+    mean(nonTitleI_2017$ELA*100), 
+    mean(nonTitleI_2018$ELA*100), 
+    NA,
+    mean(nonTitleI_2020$ELA*100), 
+    mean(nonTitleI_2021$ELA*100), 
+    mean(nonTitleI_2022$ELA*100), 
+    mean(nonTitleI_2023$ELA*100)
+  ), 
+  Non_TitleI_Math = c(
+    mean(nonTitleI_2017$Math*100), 
+    mean(nonTitleI_2018$Math*100), 
+    NA,
+    mean(nonTitleI_2020$Math*100), 
+    mean(nonTitleI_2021$Math*100), 
+    mean(nonTitleI_2022$Math*100), 
+    mean(nonTitleI_2023$Math*100)
+  ),
+  Non_TitleI_Science = c(
+    mean(nonTitleI_2017$Science*100), 
+    mean(nonTitleI_2018$Science*100), 
+    NA,
+    mean(nonTitleI_2020$Science*100), 
+    mean(nonTitleI_2021$Science*100), 
+    mean(nonTitleI_2022$Science*100), 
+    mean(nonTitleI_2023$Science*100)
+  ),
+  LBA_ELA = c(LBA_data$ELA[1], 
+          LBA_data$ELA[2],
+          NA, 
+          LBA_data$ELA[3],
+          LBA_data$ELA[4], 
+          LBA_data$ELA[5], 
+          LBA_data$ELA[6]), 
+  LBA_Math = c(LBA_data$Math[1], 
+          LBA_data$Math[2],
+          NA, 
+          LBA_data$Math[3],
+          LBA_data$Math[4], 
+          LBA_data$Math[5], 
+          LBA_data$Math[6]),
+  LBA_Science = c(LBA_data$Science[1], 
+          LBA_data$Science[2],
+          NA, 
+          LBA_data$Science[3],
+          LBA_data$Science[4], 
+          LBA_data$Science[5], 
+          LBA_data$Science[6]),
+  school_district_ELA=c(school_district$ELA[1],
+                    school_district$ELA[2], 
+                    NA, 
+                    school_district$ELA[3], 
+                    school_district$ELA[4],
+                    school_district$ELA[5], 
+                    school_district$ELA[6]), 
+  school_district_Math=c(school_district$Math[1],
+                    school_district$Math[2], 
+                    NA, 
+                    school_district$Math[3], 
+                    school_district$Math[4],
+                    school_district$Math[5], 
+                    school_district$Math[6]),
+  school_district_Science=c(school_district$Science[1],
+                    school_district$Science[2], 
+                    NA, 
+                    school_district$Science[3], 
+                    school_district$Science[4],
+                    school_district$Science[5], 
+                    school_district$Science[6]),
+  elementary_average_ELA=c(mean(file_2017$ELA*100), 
+                       mean(file_2018$ELA*100), 
+                       NA,
+                       mean(file_2020$ELA*100), 
+                       mean(file_2021$ELA*100),
+                       mean(file_2022$ELA*100), 
+                       mean(file_2023$ELA*100)),
+  elementary_average_Math=c(mean(file_2017$Math*100), 
+                       mean(file_2018$Math*100), 
+                       NA,
+                       mean(file_2020$Math*100), 
+                       mean(file_2021$Math*100),
+                       mean(file_2022$Math*100), 
+                       mean(file_2023$Math*100)),
+  elementary_average_Science=c(mean(file_2017$Science*100), 
+                       mean(file_2018$Science*100), 
+                       NA,
+                       mean(file_2020$Science*100), 
+                       mean(file_2021$Science*100),
+                       mean(file_2022$Science*100), 
+                       mean(file_2023$Science*100))
+)
+
+everything_ELA<- data.frame("Title I"= everything_proficiency$TitleI_ELA, 
+                            "Non-Title I"= everything_proficiency$Non_TitleI_ELA, 
+                            "LBA"= everything_proficiency$LBA_ELA,
+                            "School District"= everything_proficiency$school_district_ELA,
+                            "Elementary Average"= everything_proficiency$elementary_average_ELA,
+                            Year = c("2017-18", 
+           "2018-19",
+           "2019-20",
+           "2020-21", 
+           "2021-22", 
+           "2022-23", 
+           "2023-24"))
+
+everything_Math<- data.frame("Title I"= everything_proficiency$TitleI_Math, 
+                            "Non-Title I"= everything_proficiency$Non_TitleI_Math, 
+                            "LBA"= everything_proficiency$LBA_Math,
+                            "School District"= everything_proficiency$school_district_Math,
+                            "Elementary Average"= everything_proficiency$elementary_average_Math,
+                            Year = c("2017-18", 
+           "2018-19",
+           "2019-20",
+           "2020-21", 
+           "2021-22", 
+           "2022-23", 
+           "2023-24"))
+everything_Science<- data.frame("Title I"= everything_proficiency$TitleI_Science, 
+                            "Non-Title I"= everything_proficiency$Non_TitleI_Science, 
+                            "LBA"= everything_proficiency$LBA_Science,
+                            "School District"= everything_proficiency$school_district_Science,
+                            "Elementary Average"= everything_proficiency$elementary_average_Science,
+                            Year = c("2017-18", 
+           "2018-19",
+           "2019-20",
+           "2020-21", 
+           "2021-22", 
+           "2022-23", 
+           "2023-24"))
+everything_ELA_long<- everything_ELA%>%
+  pivot_longer(cols = c("Title.I", "Non.Title.I", "LBA", "School.District", "Elementary.Average"),
+    names_to = "Group",
+    values_to = "Proficiency")
+
+everything_Math_long<- everything_Math%>%
+  pivot_longer(cols = c("Title.I", "Non.Title.I", "LBA", "School.District", "Elementary.Average"),
+    names_to = "Group",
+    values_to = "Proficiency")
+
+everything_Science_long<- everything_Science%>%
+  pivot_longer(cols = c("Title.I", "Non.Title.I", "LBA", "School.District", "Elementary.Average"),
+    names_to = "Group",
+    values_to = "Proficiency")
+ggplot (everything_ELA_long, aes(x=factor(Year), y=Proficiency, group=Group, color=Group)) +
+  geom_point(size=3) +
+  geom_line(stat="identity", size=1.25)+
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "Title.I" = "#cf597e", "Non.Title.I"="green", "School.District"="orange", "Elementary.Average"="pink"),
+    labels = c("LBA" = "Laura B. Anderson", "Title.I" = "Title I Schools", "Non.Title.I"="Non-Title I Schools", "School.District"="School District", "Elementary.Average"="Elementary Average")
+  ) +
+  labs(
+    title = "Average ELA Proficiency Rates from 2017-24", 
+    x = "Year", 
+    y = "Average ELA Proficiency Rates"
+  ) +
+  theme_minimal()
+
+ggplot (everything_Math_long, aes(x=factor(Year), y=Proficiency, group=Group, color=Group)) +
+  geom_point(size=3) +
+  geom_line(stat="identity", size=1.25)+
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "Title.I" = "#cf597e", "Non.Title.I"="green", "School.District"="orange", "Elementary.Average"="pink"),
+    labels = c("LBA" = "Laura B. Anderson", "Title.I" = "Title I Schools", "Non.Title.I"="Non-Title I Schools", "School.District"="School District", "Elementary.Average"="Elementary Average")
+  ) +
+  labs(
+    title = "Average Math Proficiency Rates from 2017-24", 
+    x = "Year", 
+    y = "Average Math Proficiency Rates"
+  ) +
+  theme_minimal()
+
+ggplot (everything_Science_long, aes(x=factor(Year), y=Proficiency, group=Group, color=Group)) +
+  geom_point(size=3) +
+  geom_line(stat="identity", size=1.25)+
+  scale_color_manual(
+    values = c("LBA" = "#1f77b4", "Title.I" = "#cf597e", "Non.Title.I"="green", "School.District"="orange", "Elementary.Average"="pink"),
+    labels = c("LBA" = "Laura B. Anderson", "Title.I" = "Title I Schools", "Non.Title.I"="Non-Title I Schools", "School.District"="School District", "Elementary.Average"="Elementary Average")
+  ) +
+  labs(
+    title = "Average Science Proficiency Rates from 2017-24", 
+    x = "Year", 
+    y = "Average Science Proficiency Rates"
+  ) +
+  theme_minimal()
+```
+
+```{r suspensions}
+sus_info_2017<- file_2017[,8:13]
+sus_info_2018<- file_2018[,8:13]
+sus_info_2020<- file_2020[,8:13]
+sus_info_2021<- file_2021[,8:13]
+sus_info_2022<- file_2022[,8:13]
+
+sus_titleI_2017 <- sus_info_2017[sus_info_2017[, 1] == "Yes", ]
+sus_titleI_2017$year <- c(rep("2017-18", 9))
+
+sus_nonTitleI_2017 <- sus_info_2017[sus_info_2017[, 1] == "No",]
+sus_nonTitleI_2017$year <- c(rep("2017-18", 15))
+
+sus_titleI_2018 <- sus_info_2018[sus_info_2018[, 1] == "Yes", ]
+sus_titleI_2018$year <- c(rep("2018-19", 8))
+
+sus_nonTitleI_2018 <- sus_info_2018[sus_info_2018[, 1] == "No",]
+sus_nonTitleI_2018$year <- c(rep("2018-19", 15))
+
+sus_titleI_2020 <- sus_info_2020[sus_info_2020[, 1] == "Yes", ]
+sus_titleI_2020$year <- c(rep("2020-21", 9))
+
+sus_nonTitleI_2020 <- sus_info_2020[sus_info_2020[, 1] == "No",]
+sus_nonTitleI_2020$year <- c(rep("2020-21", 15))
+
+sus_titleI_2021 <- sus_info_2021[sus_info_2021[, 1] == "Yes", ]
+sus_titleI_2021$year <- c(rep("2021-22", 9))
+
+sus_nonTitleI_2021 <- sus_info_2021[sus_info_2021[, 1] == "No",]
+sus_nonTitleI_2021$year <- c(rep("2021-22", 15))
+
+sus_titleI_2022 <- sus_info_2022[sus_info_2022[, 1] == "Yes", ]
+sus_titleI_2022$year <- c(rep("2022-23", 9))
+
+sus_nonTitleI_2022 <- sus_info_2022[sus_info_2022[, 1] == "No",]
+sus_nonTitleI_2022$year <- c(rep("2022-23", 15))
+
+sus_titleI_2017$"Title I?" <- NULL
+as.double (sus_titleI_2017$out_of_school_rate)
+class(sus_titleI_2017$out_of_school_rate)
+sus_titleI_2017<- sus_titleI_2017 %>%
+  pivot_longer(cols = c("in_school", "out_of_school", "number_of_students", "in_school_rate", "out_of_school_rate", "year"),
+    names_to = "Group",
+    values_to = "sus_rate")
+
+ggplot(sus_titleI_2017, aes (x=year, y=))
+```
