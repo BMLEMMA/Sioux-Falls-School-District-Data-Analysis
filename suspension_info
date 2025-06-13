@@ -1,0 +1,156 @@
+
+```{r adjusting suspension data}
+sus_info_2017<- file_2017[,8:13]
+sus_info_2018<- file_2018[,8:13]
+sus_info_2020<- file_2020[,8:13]
+sus_info_2021<- file_2021[,8:13]
+sus_info_2022<- file_2022[,8:13]
+```
+
+
+```{r suspension 2017}
+sus_titleI_2017 <- sus_info_2017[sus_info_2017[, 1] == "Yes", ]
+sus_titleI_2017$year <- c(rep("2017-18", 9))
+
+sus_nonTitleI_2017 <- sus_info_2017[sus_info_2017[, 1] == "No",]
+sus_nonTitleI_2017$year <- c(rep("2017-18", 15))
+sus_info_2017_in_school<- data.frame ("TitleI"=mean(sus_titleI_2017$in_school_rate), 
+                                      "Non_TitleI"=mean(sus_nonTitleI_2017$in_school_rate), 
+                                      year="2017-18")
+
+sus_info_2017_in_school<- sus_info_2017_in_school %>%
+  pivot_longer(cols = c("TitleI", "Non_TitleI"),
+    values_to= "Suspensions")
+
+ggplot (sus_info_2017_in_school, aes(x=name, y=Suspensions, group=name)) +
+  geom_bar(stat="identity", fill=c("#226e9c", "#cf597e")) +
+  scale_x_discrete(labels = c(
+    "Non_TitleI" = "Non-Title I Schools",
+    "TitleI" = "Title I Schools"
+  )) +
+  labs(title="The Number of In-School Suspensions for Schools in Sioux Falls in 2017-18",
+       x="School Type",
+       y="Average Rate of Suspensions (%)") +
+  theme_minimal()
+
+```
+
+```{r suspension 2018}
+sus_titleI_2018 <- sus_info_2018[sus_info_2018[, 1] == "Yes", ]
+sus_titleI_2018$year <- c(rep("2018-19", 8))
+
+sus_nonTitleI_2018 <- sus_info_2018[sus_info_2018[, 1] == "No",]
+sus_nonTitleI_2018$year <- c(rep("2018-19", 15))
+
+
+sus_nonTitleI_2018 <- sus_info_2017[sus_info_2017[, 1] == "No",]
+sus_nonTitleI_2018$year <- c(rep("2018-19", 15))
+sus_info_2018_in_school<- data.frame ("TitleI"=mean(sus_titleI_2018$in_school_rates), 
+                                      "Non_TitleI"=mean(sus_nonTitleI_2018$in_school_rate), 
+                                      year="2018-19")
+
+sus_info_2018_in_school<- sus_info_2018_in_school %>%
+  pivot_longer(cols = c("TitleI", "Non_TitleI"),
+    values_to= "Suspensions")
+
+ggplot (sus_info_2018_in_school, aes(x=name, y=Suspensions, group=name)) +
+  geom_bar(stat="identity", fill=c("#226e9c", "#cf597e")) +
+  scale_x_discrete(labels = c(
+    "Non_TitleI" = "Non-Title I Schools",
+    "TitleI" = "Title I Schools"
+  )) +
+  labs(title="The Number of In-School Suspensions for Schools in Sioux Falls in 2018-19",
+       x="School Type",
+       y="Average Rate of Suspensions (%)") +
+  theme_minimal()
+```
+
+```{r suspension 2020}
+sus_titleI_2020 <- sus_info_2020[sus_info_2020[, 1] == "Yes", ]
+sus_titleI_2020$year <- c(rep("2020-21", 9))
+
+sus_nonTitleI_2020 <- sus_info_2020[sus_info_2020[, 1] == "No",]
+sus_nonTitleI_2020$year <- c(rep("2020-21", 15))
+
+
+sus_nonTitleI_2020 <- sus_info_2020[sus_info_2020[, 1] == "No",]
+sus_nonTitleI_2020$year <- c(rep("2020-21", 15))
+sus_info_2020_in_school<- data.frame ("TitleI"=mean(sus_titleI_2020$in_school_rates), 
+                                      "Non_TitleI"=mean(sus_nonTitleI_2020$in_school_rates), 
+                                      year="2020-21")
+
+sus_info_2020_in_school<- sus_info_2020_in_school %>%
+  pivot_longer(cols = c("TitleI", "Non_TitleI"),
+    values_to= "Suspensions")
+
+ggplot (sus_info_2020_in_school, aes(x=name, y=Suspensions, group=name)) +
+  geom_bar(stat="identity", fill=c("#226e9c", "#cf597e")) +
+  scale_x_discrete(labels = c(
+    "Non_TitleI" = "Non-Title I Schools",
+    "TitleI" = "Title I Schools"
+  )) +
+  labs(title="The Number of In-School Suspensions for Schools in Sioux Falls in 2020-21",
+       x="School Type",
+       y="Average Rate of Suspensions (%)") +
+  theme_minimal()
+```
+
+```{r suspension 2021}
+sus_titleI_2021 <- sus_info_2021[sus_info_2021[, 1] == "Yes", ]
+sus_titleI_2021$year <- c(rep("2021-22", 9))
+
+sus_nonTitleI_2021 <- sus_info_2021[sus_info_2021[, 1] == "No",]
+sus_nonTitleI_2021$year <- c(rep("2021-22", 15))
+
+
+sus_nonTitleI_2021 <- sus_info_2021[sus_info_2021[, 1] == "No",]
+sus_nonTitleI_2021$year <- c(rep("2021-22", 15))
+sus_info_2021_in_school<- data.frame ("TitleI"=mean(sus_titleI_2021$in_school_rates), 
+                                      "Non_TitleI"=mean(sus_nonTitleI_2021$in_school_rates), 
+                                      year="2021-22")
+
+sus_info_2021_in_school<- sus_info_2021_in_school %>%
+  pivot_longer(cols = c("TitleI", "Non_TitleI"),
+    values_to= "Suspensions")
+
+ggplot (sus_info_2021_in_school, aes(x=name, y=Suspensions, group=name)) +
+  geom_bar(stat="identity", fill=c("#226e9c", "#cf597e")) +
+  scale_x_discrete(labels = c(
+    "Non_TitleI" = "Non-Title I Schools",
+    "TitleI" = "Title I Schools"
+  )) +
+  labs(title="The Number of In-School Suspensions for Schools in Sioux Falls in 2021-22",
+       x="School Type",
+       y="Average Rate of Suspensions (%)") +
+  theme_minimal()
+```
+
+```{r suspension 2022}
+sus_titleI_2022 <- sus_info_2022[sus_info_2022[, 1] == "Yes", ]
+sus_titleI_2022$year <- c(rep("2022-23", 9))
+
+sus_nonTitleI_2022 <- sus_info_2022[sus_info_2020[, 1] == "No",]
+sus_nonTitleI_2022$year <- c(rep("2022-23", 15))
+
+
+sus_nonTitleI_2022 <- sus_info_2022[sus_info_2022[, 1] == "No",]
+sus_nonTitleI_2022$year <- c(rep("2022-23", 15))
+sus_info_2022_in_school<- data.frame ("TitleI"=mean(sus_titleI_2022$in_school_rates), 
+                                      "Non_TitleI"=mean(sus_nonTitleI_2022$in_school_rates), 
+                                      year="2022-23")
+
+sus_info_2022_in_school<- sus_info_2022_in_school %>%
+  pivot_longer(cols = c("TitleI", "Non_TitleI"),
+    values_to= "Suspensions")
+
+ggplot (sus_info_2022_in_school, aes(x=name, y=Suspensions, group=name)) +
+  geom_bar(stat="identity", fill=c("#226e9c", "#cf597e")) +
+  scale_x_discrete(labels = c(
+    "Non_TitleI" = "Non-Title I Schools",
+    "TitleI" = "Title I Schools"
+  )) +
+  labs(title="The Number of In-School Suspensions for Schools in Sioux Falls in 2022-23",
+       x="School Type",
+       y="Average Rate of Suspensions (%)") +
+  theme_minimal()
+```
