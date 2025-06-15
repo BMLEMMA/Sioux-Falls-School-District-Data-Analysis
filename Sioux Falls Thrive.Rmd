@@ -54,7 +54,7 @@ Absenteeism_2017_long <- Absenteeism_2017 %>%
     values_to = "Absenteeism"
   )
 
-#extracting proficiency scores
+#extracting proficiency scores:
 ELA_titleI_2017<- mean (titleI_2017$ELA)
 ELA_non_titleI_2017<- mean (nonTitleI_2017$ELA)
 ELA_2017<- data.frame (ELA_titleI_2017, ELA_non_titleI_2017, year=("2017"))
@@ -100,9 +100,11 @@ proficiency_2017_total<- data.frame(ELAI=ELA_titleI_2017, MathI=Math_titleI_2017
                                      ELAN=ELA_non_titleI_2017, MathN=Math_non_titleI_2017, ScienceN=Science_non_titleI_2017)
 Proficiency_2017_long_total <- proficiency_2017_total %>%
   pivot_longer(
-    cols = everything(),                # pivot all columns
-    names_to = c("Subject", "Group"),  # split names into two parts
-    names_pattern = "([A-Za-z]+)([IN])",  # regex to separate "ELA" and "I" or "N"
+    cols = everything(),                
+# pivoting all columns to achieve long format.
+    names_to = c("Subject", "Group"),  
+# splitting names into two parts and using regular expressions to separate subject name and I and N letters.
+    names_pattern = "([A-Za-z]+)([IN])", 
     values_to = "Proficiency"
   )
 ```
